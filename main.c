@@ -1,64 +1,48 @@
 #include "monty.h"
-#include "string.h"
+#include <string.h>
 
-glob_t global = {NULL, NULL};
+/* global struct to hold flag for queue and stack length */
+var_t var;
+
 /**
- * main - Entry point
- * @argc: Number of arguments
- * @argv: Arguments
- * Return: number of arguments.
+ * main - Monty bytecode interpreter
+ * @argc: number of arguments passed
+ * @argv: array of argument strings
+ *
+ * Return: EXIT_SUCCESS on success or EXIT_FAILURE on failure
  */
 int main(int argc, char *argv[])
 {
-	if (argc == 2)
-		handle_command(argv[1]);
-	else
-	{
-		fprintf(stderr,"USAGE: monty file\n");
-		exit(EXIT_FAILURE);
-	}
-	return (0);
-}
-/**
- * handle_command - Read file
- * @argv: Arguments
- * Return: Nothing
- */
-void handle_command(char *argv)
-{
-	int count = 0, result = 0;
-	size_t bufsize = 0;
-	char *arguments = NULL, *item = NULL;
 	stack_t *stack = NULL;
+	unsigned int line_number = 0;
+	FILE *fs = NULL;
+	char *lineptr = NULL, *op = NULL;
+	size_t n = 0;
 
-	global.fd = fopen(argv, "r");
-	if (global.fd)
+	var.queue = 0;
+	var.stack_len = 0;
+	if (argc != 2)
 	{
-		while (getline(&global.line, &bufsize, global.fd) != -1)
-		{
-			count++;
-			arguments = strtok(global.line, " \n\t\r");
-			if (arguments == NULL)
-			{
-				free(arguments);
-				continue;
-			}
-			else if (*arguments == '#' || *arguments == '-')
-				continue;
-			item = strtok(NULL, " \n\t\r");
-			result = get_opc(&stack, arguments, item, count);
-			if (result == 1)
-				push_failure(global.fd, global.line, stack, count);
-			else if (result == 2)
-				no_command(global.fd, global.line, stack, arguments, count);
-		}
-		free(global.line);
-		free_stack(stack);
-		fclose(global.fd);
-	}
-	else
-	{
-		fprintf(stderr, "Error: Can't open file %s\n", argv);
+		dprintf(STDOUT_FILENO, "USAGE: monty file\n");
 		exit(EXIT_FAILURE);
 	}
+	fs = fopen(argv[1], "r");
+	if (fs == NULL)
+	{
+		dprintf(STDOUT_FILENO, "Error: Can't open file %s\n", argv[1]);
+		exit(EXIT_FAILURE);
+	}
+	on_exit(free_lineptr, &lineptr);
+	on_exit(free_stack, &stack);
+	on_exit(m_fs_close, fs);
+	while (getline(&lineptr, &n, fs) != -1)
+	{
+		line_number++;
+		op = strtok(lineptr, "\n\t\r ");
+		if (op != NULL && op[0] != '#')
+		{
+			get_op(op, &stack, line_number);
+		}
+	}
+	exit(EXIT_SUCCESS);
 }
