@@ -12,23 +12,23 @@ void get_op(char *op, stack_t **stack, unsigned int line_number)
 {
 	size_t i;
 	instruction_t valid_ops[] = {
-		{"push", m_push},
-		{"pall", m_pall},
-		{"pint", m_pint},
-		{"pop", m_pop},
-		{"swap", m_swap},
-		{"add", m_add},
-		{"nop", m_nop},
-		{"sub", m_sub},
-		{"mul", m_mul},
-		{"div", m_div},
-		{"mod", m_mod},
+		{"push", _push},
+		{"pall", _pall},
+		{"pint", _pint},
+		{"pop", _pop},
+		{"swap", _swap},
+		{"add", _add},
+		{"nop", _nop},
+		{"sub", _sub},
+		{"mul", _mul},
+		{"div", _div},
+		{"mod", _mod},
 		{"rotl", rotl},
 		{"rotr", rotr},
-		{"stack", m_stack},
-		{"queue", m_queue},
-		{"pchar", m_pchar},
-		{"pstr", m_pstr},
+		{"stack", _stack},
+		{"queue", _queue},
+		{"pchar", _pchar},
+		{"pstr", _pstr},
 		{NULL, NULL}
 	};
 
