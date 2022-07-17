@@ -1,65 +1,48 @@
 #include "monty.h"
 
 /**
- * get_op_func - function searches for a match between opcode and text
- * and returns the corresponding function
- * @line: struct containing line contents and line number
- * @meta: struct containing all allocated memory
+ * get_op - check op against valid opcodes
+ * @op: op to check
+ * @stack: double pointer to the beginnig of the stack
+ * @line_number: script line number
  *
- * Return: pointer to the matching function
+ * Return: void
  */
-void (*get_op_func(line_t line, meta_t *meta))(stack_t **, unsigned int)
+void get_op(char *op, stack_t **stack, unsigned int line_number)
 {
-	unsigned int i = 0;
-	instruction_t ops[] = {
-		{"push", push},
-		{"pall", pall},
-		{"pint", pint},
-		{"pop", pop},
-		{"swap", swap},
-		{"add", addop},
-		{"sub", subop},
-		{"div", divop},
-		{"mul", mulop},
-		{"mod", modop},
-		{"nop", nop},
-		{"pchar", pchar},
-		{"pstr", pstr},
-		{"rotl", rotlop},
-		{"rotr", rotrop},
-		{"stack", addst},
-		{"queue", addqu},
+	size_t i;
+	instruction_t valid_ops[] = {
+		{"push", m_push},
+		{"pall", m_pall},
+		{"pint", m_pint},
+		{"pop", m_pop},
+		{"swap", m_swap},
+		{"add", m_add},
+		{"nop", m_nop},
+		{"sub", m_sub},
+		{"mul", m_mul},
+		{"div", m_div},
+		{"mod", m_mod},
+		{"rotl", rotl},
+		{"rotr", rotr},
+		{"stack", m_stack},
+		{"queue", m_queue},
+		{"pchar", m_pchar},
+		{"pstr", m_pstr},
 		{NULL, NULL}
 	};
 
-	if (comment_check(line))
-		return (nop);
-
-	while (ops[i].opcode)
+	for (i = 0; valid_ops[i].opcode != NULL; i++)
 	{
-		if (strcmp(ops[i].opcode, line.content[0]) == 0)
+		if (strcmp(valid_ops[i].opcode, op) == 0)
 		{
-			push_check(line, meta, ops[i].opcode);
-			if (arg.flag == 1 &&
-			strcmp(ops[i].opcode, "push") == 0)
-			{
-				if (line.content)
-					free(line.content);
-				return (qpush);
-			}
-			free(line.content);
-			return (ops[i].f);
+			valid_ops[i].f(stack, line_number);
+			return;
 		}
-
-		i++;
 	}
 
-	fprintf(stderr, "L%d: unknown instruction %s\n", line.number,
-	line.content[0]);
-	free(line.content);
-	free(meta->buf);
-	free_stack(&(meta->stack));
-	fclose(meta->file);
-	free(meta);
+	dprintf(STDOUT_FILENO,
+		"L%u: unknown instruction %s\n",
+		line_number, op);
 	exit(EXIT_FAILURE);
 }
