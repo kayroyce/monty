@@ -2,20 +2,29 @@
 
 /**
  * free_stack - frees the stack on exit
- *
- * @stack: pointer to the stack
+ * @status: exit status
+ * @arg: double pointer to the stack
  *
  * Return: void
  */
-void free_stack(stack_t *stack)
+void free_stack(int status, void *arg)
 {
-	stack_t *current = NULL;
+	stack_t **stack;
+	stack_t *next;
 
-	current = stack;
+	(void)status;
 
-	if (current != NULL)
+	stack = (stack_t **)arg;
+	if (*stack)
 	{
-		free_stack(current->next);
-		free(current);
+		(*stack)->prev->next = NULL;
+		(*stack)->prev = NULL;
 	}
+	while (*stack != NULL)
+	{
+		next = (*stack)->next;
+		free(*stack);
+		*stack = next;
+	}
+	var.stack_len = 0;
 }
